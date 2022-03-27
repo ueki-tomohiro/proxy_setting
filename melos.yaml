@@ -1,0 +1,34 @@
+name: proxy_setting
+repository: https://github.com/ueki-tomohiro/proxy_setting
+
+packages:
+  - packages/**
+  - "tests/*"
+
+ignore:
+  - "packages/**/*example"
+
+command:
+  version:
+    linkToCommits: true
+    branch: main
+    workspaceChangelog: true
+
+scripts:
+  lint:
+    run: melos run analyze && melos run format
+    description: Run all static analysis checks.
+  analyze: melos exec -- "dart analyze ."
+  format: 
+    run: dart pub global run flutter_plugin_tools format
+    description: Requires `flutter_plugin_tools` (`pub global activate flutter_plugin_tools`).
+  test:
+    run: |
+      melos exec -c 6 --fail-fast -- \
+        "flutter test --no-pub"
+    description: Run `flutter test` for a specific package.
+    select-package:
+      dir-exists:
+        - test
+      ignore:
+        - "*example*"
