@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:proxy_setting/proxy_setting.dart';
+import 'package:detect_proxy_setting/detect_proxy_setting.dart';
 import 'package:proxy_setting_platform_interface/proxy_setting_platform_interface.dart';
 
 import 'mock_proxy_setting_platform.dart';

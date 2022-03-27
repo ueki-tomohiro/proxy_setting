@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:proxy_setting/proxy_setting.dart';
+import 'package:detect_proxy_setting/detect_proxy_setting.dart';
 import 'package:proxy_setting_platform_interface/proxy_setting.dart';
 import 'package:tests/service.dart';
 

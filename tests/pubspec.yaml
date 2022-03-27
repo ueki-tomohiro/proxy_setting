@@ -16,8 +16,8 @@ dependencies:
   riverpod: ^1.0.3
   flutter_riverpod: ^1.0.3
 
-  proxy_setting:
-    path: ../packages/proxy_setting
+  detect_proxy_setting:
+    path: ../packages/detect_proxy_setting
   proxy_setting_macos:
     path: ../packages/proxy_setting_macos
   proxy_setting_windows:
@@ -26,8 +26,8 @@ dependencies:
     path: ../packages/proxy_setting_platform_interface
 
 dependency_overrides:
-  proxy_setting:
-    path: ../packages/proxy_setting
+  detect_proxy_setting:
+    path: ../packages/detect_proxy_setting
   proxy_setting_macos:
     path: ../packages/proxy_setting_macos
   proxy_setting_windows:

@@ -1,43 +1,11 @@
-This package detect proxy setting in desktop.
-Supported os are MacOS, Windows.
+# proxy\_setting\_macos
+
+The macos implementation of [`detect_proxy_setting`][1].
 
 ## Usage
 
-To See `/tests` folder.
+This package is [endorsed][2], which means you can simply use `detect_proxy_setting`
+normally. This package will be automatically included in your app when you do.
 
-### Initialize
-```dart
-class HttpOverridesImpl extends HttpOverrides {
-  String address = "";
-  String type = "DIRECT";
-
-  @override
-  String findProxyFromEnvironment(Uri uri, Map<String, String>? environment) {
-    if (type == "DIRECT") {
-      return "DIRECT";
-    }
-    return 'PROXY $address';
-  }
-
-  Future init() async {
-    final setting = await proxySetting();
-    print(setting);
-    if (setting == null || setting.mode == ProxySettingModeEnum.direct) {
-      type = "DIRECT";
-    } else if (setting.mode == ProxySettingModeEnum.proxy &&
-        setting.proxy.isNotEmpty) {
-      type = "PROXY";
-      address = setting.proxy;
-    }
-  }
-}
-
-Future main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  var httpOverrides = HttpOverridesImpl();
-  await httpOverrides.init();
-  HttpOverrides.global = httpOverrides;
-
-  runApp(const ProviderScope(child: MyApp()));
-}
-```
+[1]: https://pub.dev/packages/detect_proxy_setting
+[2]: https://flutter.dev/docs/development/packages-and-plugins/developing-packages#endorsed-federated-plugin
