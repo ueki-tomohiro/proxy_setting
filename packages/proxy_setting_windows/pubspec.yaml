@@ -1,0 +1,26 @@
+name: proxy_setting_windows
+description: Windows implementation of the proxy_setting plugin.
+repository: https://github.com/ueki-tomohiro/proxy_setting/proxy_setting_windows
+version: 0.0.0
+
+environment:
+  sdk: ">=2.12.0 <3.0.0"
+  flutter: ">=2.5.0"
+
+flutter:
+  plugin:
+    implements: proxy_setting
+    platforms:
+      windows:
+        pluginClass: ProxySettingWindows
+        dartPluginClass: ProxySettingWindows
+
+dependencies:
+  flutter:
+    sdk: flutter
+  proxy_setting_platform_interface: ^0.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  test: ^1.16.3
