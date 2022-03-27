@@ -1,6 +1,6 @@
 name: proxy_setting
 description: Flutter plugin for detect proxy setting
-repository: https://github.com/ueki-tomohiro/proxy_setting
+repository: https://github.com/ueki-tomohiro/proxy_setting/tree/main/packages/proxy_setting
 version: 0.0.0
 
 environment:
