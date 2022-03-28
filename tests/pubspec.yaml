@@ -18,6 +18,8 @@ dependencies:
 
   detect_proxy_setting:
     path: ../packages/detect_proxy_setting
+  proxy_setting_ios:
+    path: ../packages/proxy_setting_ios
   proxy_setting_macos:
     path: ../packages/proxy_setting_macos
   proxy_setting_windows:
@@ -28,6 +30,8 @@ dependencies:
 dependency_overrides:
   detect_proxy_setting:
     path: ../packages/detect_proxy_setting
+  proxy_setting_ios:
+    path: ../packages/proxy_setting_ios
   proxy_setting_macos:
     path: ../packages/proxy_setting_macos
   proxy_setting_windows:
