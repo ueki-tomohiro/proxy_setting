@@ -2,13 +2,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:proxy_setting_platform_interface/proxy_setting_platform_interface.dart';
 
-import '../lib/proxy_setting_ios.dart';
+import '../lib/proxy_setting_android.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('$ProxySettingiOS', () {
-    const MethodChannel channel = MethodChannel('playon.jp/proxy_setting_ios');
+  group('$ProxySettingAndroid', () {
+    const MethodChannel channel =
+        MethodChannel('playon.jp/proxy_setting_android');
     final List<MethodCall> log = <MethodCall>[];
     channel.setMockMethodCallHandler((MethodCall methodCall) async {
       log.add(methodCall);
@@ -29,11 +30,11 @@ void main() {
     });
 
     test('registers instance', () {
-      ProxySettingiOS.registerWith();
-      expect(ProxySettingPlatform.instance, isA<ProxySettingiOS>());
+      ProxySettingAndroid.registerWith();
+      expect(ProxySettingPlatform.instance, isA<ProxySettingAndroid>());
     });
     test('proxySetting', () async {
-      final ProxySettingiOS setting = ProxySettingiOS();
+      final ProxySettingAndroid setting = ProxySettingAndroid();
       await setting.proxySetting(url: 'http://example.com/');
 
       expect(
@@ -47,7 +48,7 @@ void main() {
     });
 
     test('proxySetting result', () async {
-      final ProxySettingiOS setting = ProxySettingiOS();
+      final ProxySettingAndroid setting = ProxySettingAndroid();
       final proxySetting =
           await setting.proxySetting(url: 'http://example.com/');
 

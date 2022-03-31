@@ -3,13 +3,13 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:proxy_setting_platform_interface/proxy_setting_platform_interface.dart';
 
-const MethodChannel _channel = MethodChannel('playon.jp/proxy_setting_ios');
+const MethodChannel _channel = MethodChannel('playon.jp/proxy_setting_android');
 
-/// An implementation of [ProxySettingPlatform] for iOS.
-class ProxySettingiOS extends ProxySettingPlatform {
+/// An implementation of [ProxySettingPlatform] for android.
+class ProxySettingAndroid extends ProxySettingPlatform {
   /// Registers this class as the default instance of [ProxySettingPlatform].
   static void registerWith() {
-    ProxySettingPlatform.instance = ProxySettingiOS();
+    ProxySettingPlatform.instance = ProxySettingAndroid();
   }
 
   @override

@@ -1,5 +1,5 @@
 name: proxy_setting_ios
-description: iOS implementation of the proxy_setting plugin.
+description: iOS implementation of the detect_proxy_setting plugin.
 repository: https://github.com/ueki-tomohiro/proxy_setting/tree/main/packages/proxy_setting_ios
 version: 0.0.2
 

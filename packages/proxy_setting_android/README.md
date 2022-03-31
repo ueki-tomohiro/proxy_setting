@@ -1,6 +1,6 @@
-# proxy\_setting\_ios
+# proxy\_setting\_android
 
-The ios implementation of [`detect_proxy_setting`][1].
+The andorid implementation of [`detect_proxy_setting`][1].
 
 ## Usage
 
