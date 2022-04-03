@@ -21,3 +21,12 @@ doc/api/
 *.js.map
 
 .idea
+
+*.iml
+.gradle
+/local.properties
+/.idea/workspace.xml
+/.idea/libraries
+.DS_Store
+/build
+/captures

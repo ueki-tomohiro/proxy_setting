@@ -1,15 +1,19 @@
 name: detect_proxy_setting
 description: Flutter plugin for detect proxy setting
-repository: https://github.com/ueki-tomohiro/proxy_setting/tree/main/packages/proxy_setting
-version: 0.0.1
+repository: https://github.com/ueki-tomohiro/proxy_setting/tree/main/packages/detect_proxy_setting
+version: 0.0.3
 
 environment:
-  sdk: ">=2.14.0 <3.0.0"
+  sdk: ">=2.12.0 <3.0.0"
   flutter: ">=2.5.0"
 
 flutter:
   plugin:
     platforms:
+      android:
+        default_package: proxy_setting_android
+      ios:
+        default_package: proxy_setting_ios
       macos:
         default_package: proxy_setting_macos
       windows:
@@ -18,9 +22,11 @@ flutter:
 dependencies:
   flutter:
     sdk: flutter
-  proxy_setting_macos:  ^0.0.0
-  proxy_setting_platform_interface:  ^0.0.0
-  proxy_setting_windows: ^0.0.0
+  proxy_setting_android:  ^0.0.3
+  proxy_setting_ios:  ^0.0.2
+  proxy_setting_macos:  ^0.0.2
+  proxy_setting_platform_interface:  ^0.0.2
+  proxy_setting_windows: ^0.0.2
 
 dev_dependencies:
   flutter_test:

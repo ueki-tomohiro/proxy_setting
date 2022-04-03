@@ -1,6 +1,6 @@
-name: proxy_setting_macos
-description: MacOS implementation of the detect_proxy_setting plugin.
-repository: https://github.com/ueki-tomohiro/proxy_setting/tree/main/packages/proxy_setting_macos
+name: proxy_setting_android
+description: Android implementation of the detect_proxy_setting plugin.
+repository: https://github.com/ueki-tomohiro/proxy_setting/tree/main/packages/proxy_setting_android
 version: 0.0.3
 
 environment:
@@ -11,11 +11,11 @@ flutter:
   plugin:
     implements: detect_proxy_setting
     platforms:
-      macos:
+      android:
+        package: jp.playon.proxy_setting_android
         pluginClass: ProxySettingPlugin
-        fileName: proxy_setting_macos.dart
-        dartPluginClass: ProxySettingMacOS
-
+        dartPluginClass: ProxySettingAndroid
+ 
 dependencies:
   flutter:
     sdk: flutter
