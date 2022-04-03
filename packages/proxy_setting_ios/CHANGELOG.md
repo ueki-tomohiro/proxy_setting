@@ -1,5 +1,5 @@
 ## 0.0.3
-* fix package setting
+* check proxy via url
 
 ## 0.0.2
 * Initial iOS implementation of `detect_proxy_setting`.

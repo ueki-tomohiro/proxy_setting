@@ -1,6 +1,6 @@
 # proxy\_setting\_platform\_interface
 
-The macos implementation of [`detect_proxy_setting`][1].
+This package is base of the [`detect_proxy_setting`][1] plugin.
 
 ## Usage
 

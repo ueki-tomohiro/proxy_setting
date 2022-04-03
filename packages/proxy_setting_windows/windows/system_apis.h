@@ -10,6 +10,8 @@ public:
   SystemApis(const SystemApis &) = delete;
   SystemApis &operator=(const SystemApis &) = delete;
 
+  virtual HINTERNET HttpOpen(DWORD dwAccessType, LPCWSTR pszProxyW,
+                             LPCWSTR pszProxyBypassW, DWORD dwFlags) = 0;
   virtual BOOL GetProxyForUrl(HINTERNET hSession, LPCWSTR lpcwszUrl,
                               WINHTTP_AUTOPROXY_OPTIONS *pAutoProxyOptions,
                               WINHTTP_PROXY_INFO *pProxyInfo) = 0;
@@ -26,6 +28,8 @@ public:
   SystemApisImpl(const SystemApisImpl &) = delete;
   SystemApisImpl &operator=(const SystemApisImpl &) = delete;
 
+  virtual HINTERNET HttpOpen(DWORD dwAccessType, LPCWSTR pszProxyW,
+                             LPCWSTR pszProxyBypassW, DWORD dwFlags);
   virtual BOOL GetProxyForUrl(HINTERNET hSession, LPCWSTR lpcwszUrl,
                               WINHTTP_AUTOPROXY_OPTIONS *pAutoProxyOptions,
                               WINHTTP_PROXY_INFO *pProxyInfo);

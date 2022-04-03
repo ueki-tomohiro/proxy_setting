@@ -1,5 +1,6 @@
-This package detect proxy setting in desktop.
-Supported os are MacOS, Windows.
+[![pub package](https://img.shields.io/pub/v/detect_proxy_setting.svg)](https://pub.dev/packages/detect_proxy_setting)
+
+This package detect proxy setting for http. Supported os are Android, iOS, MacOS, Windows.
 
 ## Usage
 

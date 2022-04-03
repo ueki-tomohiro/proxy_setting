@@ -11,7 +11,7 @@ public class SwiftProxySettingPlugin: NSObject, FlutterPlugin {
   }
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-    // let urlString: String? = (call.arguments as? [String: Any])?["url"] as? String
+    let urlString: String? = (call.arguments as? [String: Any])?["url"] as? String
     switch call.method {
     case "proxySetting":
       guard let proxySetting = getProxySetting() else {
@@ -21,22 +21,36 @@ public class SwiftProxySettingPlugin: NSObject, FlutterPlugin {
           details: ""))
         return
       }
-      
-      var setting: [String: Any] = [:]
-      setting["mode"] = getMapInteger(map: proxySetting, key: kCFNetworkProxiesHTTPEnable) == 1 ? "proxy" : "direct"
-      setting["isAutoDetect"] = getMapInteger(map: proxySetting, key: kCFNetworkProxiesProxyAutoConfigEnable)
-      setting["configUrl"] = getMapString(map: proxySetting, key: kCFNetworkProxiesProxyAutoConfigURLString)
-
-      let proxy = getMapString(map: proxySetting, key: kCFNetworkProxiesHTTPProxy)
-      let port = getMapInteger(map: proxySetting, key: kCFNetworkProxiesHTTPPort)
-      if proxy.isEmpty {
-        setting["proxy"] = ""
-      } else if let port = port {
-        setting["proxy"] = "\(proxy):\(port)"
-      } else {
-        setting["proxy"] = proxy
+      guard let proxyMap = proxySetting as? [String : Any]  else {
+        result(FlutterError(
+          code: "proxy_error",
+          message: "Failed to load CFNetworkCopySystemProxySettings.",
+          details: ""))
+        return
       }
 
+      var setting: [String: Any] = [:]
+      setting["mode"] = getMapInteger(map: proxyMap, key: kCFNetworkProxiesHTTPEnable) == 1 ? "proxy" : "direct"
+      setting["isAutoDetect"] = getMapInteger(map: proxyMap, key: kCFNetworkProxiesProxyAutoConfigEnable)
+      setting["configUrl"] = getMapString(map: proxyMap, key: kCFNetworkProxiesProxyAutoConfigURLString)
+
+      let proxy: String
+      let port: Int?
+      if let urlString = urlString , let url = CFURLCreateWithString(kCFAllocatorDefault, urlString as CFString, nil),  let proxies = CFNetworkCopyProxiesForURL(url, proxySetting).takeRetainedValue() as? [[String: Any]], proxies.count > 0 {
+        proxy = getMapString(map: proxies[0], key: kCFNetworkProxiesHTTPProxy)
+        port = getMapInteger(map: proxies[0], key: kCFNetworkProxiesHTTPPort)
+      } else {
+        proxy = getMapString(map: proxyMap, key: kCFNetworkProxiesHTTPProxy)
+        port = getMapInteger(map: proxyMap, key: kCFNetworkProxiesHTTPPort)
+      }
+        if proxy.isEmpty {
+          setting["proxy"] = ""
+        } else if let port = port {
+          setting["proxy"] = "\(proxy):\(port)"
+        } else {
+          setting["proxy"] = proxy
+        }
+      
       setting["proxyBypass"] = ""
       result(setting)
     default:
@@ -44,8 +58,8 @@ public class SwiftProxySettingPlugin: NSObject, FlutterPlugin {
     }
   }
 
-  private func getProxySetting() -> [String:Any]? {
-    guard let setting = CFNetworkCopySystemProxySettings()?.takeRetainedValue() as? [String: Any] else {
+  private func getProxySetting() -> CFDictionary? {
+    guard let setting = CFNetworkCopySystemProxySettings()?.takeRetainedValue() else {
       return nil
     }
     return setting

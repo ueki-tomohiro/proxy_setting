@@ -50,7 +50,11 @@ public:
                         std::unique_ptr<flutter::MethodResult<>> result);
 
 private:
-  ProxySetting *HttpGetIEProxyConfigForCurrentUser();
+  ProxySetting *GetProxyForUrl(std::string url);
+  ProxySetting *GetDefaultProxyConfig();
+  ProxySetting *ProxySettingPlugin::ConvertSetting(
+      WINHTTP_CURRENT_USER_IE_PROXY_CONFIG &proxyConfig,
+      WINHTTP_PROXY_INFO &proxyInfo);
 
   std::unique_ptr<SystemApis> system_apis_;
 };

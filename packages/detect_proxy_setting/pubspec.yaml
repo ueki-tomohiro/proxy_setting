@@ -1,7 +1,7 @@
 name: detect_proxy_setting
-description: Flutter plugin for detect proxy setting
+description: This package detect proxy setting for http. Supported os are Android, iOS, MacOS, Windows.
 repository: https://github.com/ueki-tomohiro/proxy_setting/tree/main/packages/detect_proxy_setting
-version: 0.0.3
+version: 0.0.4
 
 environment:
   sdk: ">=2.12.0 <3.0.0"

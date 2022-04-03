@@ -13,6 +13,12 @@ SystemApisImpl::SystemApisImpl() {}
 
 SystemApisImpl::~SystemApisImpl() {}
 
+HINTERNET SystemApisImpl::HttpOpen(DWORD dwAccessType, LPCWSTR pszProxyW,
+                                   LPCWSTR pszProxyBypassW, DWORD dwFlags) {
+  return ::WinHttpOpen(nullptr, dwAccessType, pszProxyW, pszProxyBypassW,
+                       dwFlags);
+}
+
 BOOL SystemApisImpl::GetProxyForUrl(
     HINTERNET hSession, LPCWSTR lpcwszUrl,
     WINHTTP_AUTOPROXY_OPTIONS *pAutoProxyOptions,

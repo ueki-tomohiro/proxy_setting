@@ -19,7 +19,6 @@ namespace {
 using flutter::EncodableMap;
 using flutter::EncodableValue;
 
-// Converts the given UTF-8 string to UTF-16.
 std::wstring Utf16FromUtf8(const std::string &utf8_string) {
   if (utf8_string.empty()) {
     return std::wstring();
@@ -54,14 +53,12 @@ std::string Utf8FromUtf16(std::wstring const &src) {
   return std::string(dest.begin(), dest.end());
 }
 
-// Returns the URL argument from |method_call| if it is present, otherwise
-// returns an empty string.
 std::string GetUrlArgument(const flutter::MethodCall<> &method_call) {
-  std::string url;
+  std::string url = "";
   const auto *arguments = std::get_if<EncodableMap>(method_call.arguments());
-  if (arguments) {
+  if (arguments != nullptr) {
     auto url_it = arguments->find(EncodableValue("url"));
-    if (url_it != arguments->end()) {
+    if (url_it != arguments->end() && !url_it->second.IsNull()) {
       url = std::get<std::string>(url_it->second);
     }
   }
@@ -121,50 +118,100 @@ ProxySettingPlugin::~ProxySettingPlugin() = default;
 void ProxySettingPlugin::HandleMethodCall(
     const flutter::MethodCall<> &method_call,
     std::unique_ptr<flutter::MethodResult<>> result) {
+  std::string url = GetUrlArgument(method_call);
   if (method_call.method_name().compare("proxySetting") == 0) {
-    ProxySetting *setting = HttpGetIEProxyConfigForCurrentUser();
-    if (setting == nullptr) {
-      result->Error("proxy_error", "Failed get proxy setting");
-      return;
+    ProxySetting *setting = nullptr;
+    if (url.empty()) {
+      setting = GetDefaultProxyConfig();
+    } else {
+      setting = GetProxyForUrl(url);
     }
-
-    EncodableMap map = EncodableMap();
-    map[EncodableValue("mode")] = EncodableValue(setting->mode);
-    map[EncodableValue("isAutoDetect")] =
-        EncodableValue((int)setting->isAutoDetect);
-    map[EncodableValue("proxy")] = EncodableValue(setting->proxy);
-    map[EncodableValue("proxyBypass")] = EncodableValue(setting->proxyBypass);
-    map[EncodableValue("configUrl")] = EncodableValue(setting->configUrl);
-    delete setting;
-    setting = nullptr;
-    result->Success(EncodableValue(map));
+    if (setting == nullptr) {
+      DWORD code = GetLastError();
+      result->Error("proxy_error", "Failed get proxy setting",
+                    EncodableValue((int)code));
+    } else {
+      EncodableMap map = EncodableMap();
+      map[EncodableValue("mode")] = EncodableValue(setting->mode);
+      map[EncodableValue("isAutoDetect")] =
+          EncodableValue((int)setting->isAutoDetect);
+      map[EncodableValue("proxy")] = EncodableValue(setting->proxy);
+      map[EncodableValue("proxyBypass")] = EncodableValue(setting->proxyBypass);
+      map[EncodableValue("configUrl")] = EncodableValue(setting->configUrl);
+      delete setting;
+      setting = nullptr;
+      result->Success(EncodableValue(map));
+    }
   } else {
     result->NotImplemented();
   }
 }
 
-ProxySetting *ProxySettingPlugin::HttpGetIEProxyConfigForCurrentUser() {
-  ProxySetting *setting = nullptr;
-
+ProxySetting *ProxySettingPlugin::GetProxyForUrl(std::string url) {
   WINHTTP_CURRENT_USER_IE_PROXY_CONFIG proxyConfig;
   BOOL apiResult = system_apis_->GetIEProxyConfigForCurrentUser(&proxyConfig);
   if (apiResult == FALSE) {
-    return setting;
+    return nullptr;
+  }
+
+  HINTERNET hSession = system_apis_->HttpOpen(
+      WINHTTP_ACCESS_TYPE_DEFAULT_PROXY, WINHTTP_NO_PROXY_NAME,
+      WINHTTP_NO_PROXY_BYPASS, WINHTTP_FLAG_ASYNC);
+
+  if (hSession == nullptr) {
+    return nullptr;
+  }
+
+  WINHTTP_AUTOPROXY_OPTIONS proxyOptions;
+  ZeroMemory(&proxyOptions, sizeof(WINHTTP_AUTOPROXY_OPTIONS));
+  if (proxyConfig.fAutoDetect) {
+    proxyOptions.dwFlags = WINHTTP_AUTOPROXY_AUTO_DETECT;
+    proxyOptions.dwAutoDetectFlags =
+        WINHTTP_AUTO_DETECT_TYPE_DHCP | WINHTTP_AUTO_DETECT_TYPE_DNS_A;
+  } else if (proxyConfig.lpszAutoConfigUrl) {
+    proxyOptions.dwFlags = WINHTTP_AUTOPROXY_CONFIG_URL;
+    proxyOptions.lpszAutoConfigUrl = proxyConfig.lpszAutoConfigUrl;
+  }
+
+  WINHTTP_PROXY_INFO proxyInfo;
+  apiResult = system_apis_->GetProxyForUrl(hSession, Utf16FromUtf8(url).c_str(),
+                                           &proxyOptions, &proxyInfo);
+  if (apiResult) {
+    return ConvertSetting(proxyConfig, proxyInfo);
+  } else if (ERROR_WINHTTP_AUTODETECTION_FAILED == GetLastError()) {
+    if (system_apis_->GetDefaultProxyConfiguration(&proxyInfo)) {
+      return ConvertSetting(proxyConfig, proxyInfo);
+    }
+  }
+
+  return nullptr;
+}
+
+ProxySetting *ProxySettingPlugin::GetDefaultProxyConfig() {
+  WINHTTP_CURRENT_USER_IE_PROXY_CONFIG proxyConfig;
+  BOOL apiResult = system_apis_->GetIEProxyConfigForCurrentUser(&proxyConfig);
+  if (apiResult == FALSE) {
+    return nullptr;
   }
   WINHTTP_PROXY_INFO proxyInfo;
   BOOL result = system_apis_->GetDefaultProxyConfiguration(&proxyInfo);
   if (result == FALSE) {
-    return setting;
+    return nullptr;
   }
 
-  setting = new ProxySetting();
+  return ConvertSetting(proxyConfig, proxyInfo);
+}
+
+ProxySetting *ProxySettingPlugin::ConvertSetting(
+    WINHTTP_CURRENT_USER_IE_PROXY_CONFIG &proxyConfig,
+    WINHTTP_PROXY_INFO &proxyInfo) {
+  ProxySetting *setting = new ProxySetting();
 
   if (proxyInfo.dwAccessType == WINHTTP_ACCESS_TYPE_NAMED_PROXY) {
     setting->mode = "proxy";
   } else if (proxyInfo.dwAccessType == WINHTTP_ACCESS_TYPE_NO_PROXY) {
     setting->mode = "direct";
   }
-
   if (proxyConfig.fAutoDetect) {
     setting->isAutoDetect = true;
   }
@@ -191,4 +238,5 @@ ProxySetting *ProxySettingPlugin::HttpGetIEProxyConfigForCurrentUser() {
 
   return setting;
 }
+
 } // namespace proxy_setting_plugin

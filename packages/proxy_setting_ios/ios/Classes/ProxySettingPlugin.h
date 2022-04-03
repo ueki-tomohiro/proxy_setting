@@ -1,4 +1,4 @@
 #import <Flutter/Flutter.h>
 
-@interface ProxySettingPlugin : NSObject<FlutterPlugin>
+@interface ProxySettingPlugin : NSObject <FlutterPlugin>
 @end

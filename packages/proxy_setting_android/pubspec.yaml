@@ -1,7 +1,7 @@
 name: proxy_setting_android
 description: Android implementation of the detect_proxy_setting plugin.
 repository: https://github.com/ueki-tomohiro/proxy_setting/tree/main/packages/proxy_setting_android
-version: 0.0.3
+version: 0.0.4
 
 environment:
   sdk: ">=2.12.0 <3.0.0"
