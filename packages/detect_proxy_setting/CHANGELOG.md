@@ -1,3 +1,6 @@
+## 0.0.5
+* update version
+
 ## 0.0.4
 * check proxy via url
 
