@@ -22,11 +22,11 @@ flutter:
 dependencies:
   flutter:
     sdk: flutter
-  proxy_setting_android:  ^0.0.4
-  proxy_setting_ios:  ^0.0.3
-  proxy_setting_macos:  ^0.0.4
-  proxy_setting_platform_interface:  ^0.0.3
-  proxy_setting_windows: ^0.0.4
+  proxy_setting_android:
+  proxy_setting_ios:
+  proxy_setting_macos:
+  proxy_setting_platform_interface:
+  proxy_setting_windows:
 
 dev_dependencies:
   flutter_test:
