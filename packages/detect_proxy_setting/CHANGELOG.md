@@ -1,3 +1,6 @@
+## 0.0.6
+* fix Android
+
 ## 0.0.5
 * update version
 

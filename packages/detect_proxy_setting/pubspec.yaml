@@ -1,7 +1,7 @@
 name: detect_proxy_setting
 description: This package detect proxy setting for http. Supported os are Android, iOS, MacOS, Windows.
 repository: https://github.com/ueki-tomohiro/proxy_setting/tree/main/packages/detect_proxy_setting
-version: 0.0.5
+version: 0.0.6
 
 environment:
   sdk: ">=2.12.0 <3.0.0"
@@ -22,7 +22,7 @@ flutter:
 dependencies:
   flutter:
     sdk: flutter
-  proxy_setting_android:  ^0.0.4
+  proxy_setting_android:  ^0.0.5
   proxy_setting_ios:  ^0.0.3
   proxy_setting_macos:  ^0.0.4
   proxy_setting_platform_interface:  ^0.0.3

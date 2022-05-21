@@ -1,6 +1,8 @@
 package jp.playon.proxy_setting_android
 
+import java.net.Proxy
 import java.net.ProxySelector
+import java.net.URI
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.ProxyInfo
@@ -28,23 +30,32 @@ public final class ProxySettingPlugin: FlutterPlugin, MethodCallHandler {
       "proxySetting" -> {
         val url = call.argument<String>("url")
         val setting = mutableMapOf<String, Any?>()
-        val proxySetting: Proxy?
-        if (url.isNotEmpty()) {
-          val proxies = ProxySelector.getDefault().select(url)
+
+        if (url != null && url.isNotEmpty()) {
+          val proxies = ProxySelector.getDefault().select(URI(url))
           if (proxies.size > 0) {
-            proxySetting = proxies[0]
-          } else {
-            proxySetting = null
-          }
-        }
-        else {
-          val connectivityManager = getConnectivityManager()
-          if (connectivityManager == null) {
-            result.error("proxy_error", "Failed to load ConnectivityManager", null)
+            val proxy = proxies[0]
+            setting["isAutoDetect"] = false
+            setting["configUrl"] = ""
+            setting["proxyBypass"] = ""
+            if (proxy.type() == Proxy.NO_PROXY) {
+              setting["mode"] = "direct"
+              setting["proxy"] = ""
+            } else {
+              setting["mode"] = "proxy"
+              setting["proxy"] = proxy.address().toString()
+            }
+            result.success(setting)
             return
           }
-          proxySetting = connectivityManager.getDefaultProxy()
         }
+        val connectivityManager = getConnectivityManager()
+        if (connectivityManager == null) {
+          result.error("proxy_error", "Failed to load ConnectivityManager", null)
+          return
+        }
+        val proxySetting = connectivityManager.getDefaultProxy()
+
         if (proxySetting == null) {
           setting["mode"] = "direct"
           setting["isAutoDetect"] = false
@@ -67,7 +78,7 @@ public final class ProxySettingPlugin: FlutterPlugin, MethodCallHandler {
           }
           setting["proxyBypass"] = ""
         }
-      result.success(setting)
+        result.success(setting)
       } else -> {
         result.notImplemented()
       }
