@@ -1,3 +1,8 @@
+## 0.0.7
+* add API documentation
+* add example app
+* export `ProxySetting` types from the package
+
 ## 0.0.6
 * fix Android
 

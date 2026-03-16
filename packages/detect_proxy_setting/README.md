@@ -1,44 +1,52 @@
 [![pub package](https://img.shields.io/pub/v/detect_proxy_setting.svg)](https://pub.dev/packages/detect_proxy_setting)
 
-This package detect proxy setting for http. Supported os are Android, iOS, MacOS, Windows.
+# detect_proxy_setting
+
+Flutter plugin for reading the system HTTP proxy configuration.
+
+Supported platforms:
+
+- Android
+- iOS
+- macOS
+- Windows
+
+## Installation
+
+```yaml
+dependencies:
+  detect_proxy_setting: ^0.0.7
+```
 
 ## Usage
 
-To See `/tests` folder.
+Read the current system proxy setting:
 
-### Initialize
 ```dart
-class HttpOverridesImpl extends HttpOverrides {
-  String address = "";
-  String type = "DIRECT";
+import 'package:detect_proxy_setting/detect_proxy_setting.dart';
 
-  @override
-  String findProxyFromEnvironment(Uri uri, Map<String, String>? environment) {
-    if (type == "DIRECT") {
-      return "DIRECT";
-    }
-    return 'PROXY $address';
-  }
+final ProxySetting? setting = await proxySetting();
 
-  Future init() async {
-    final setting = await proxySetting();
-    print(setting);
-    if (setting == null || setting.mode == ProxySettingModeEnum.direct) {
-      type = "DIRECT";
-    } else if (setting.mode == ProxySettingModeEnum.proxy &&
-        setting.proxy.isNotEmpty) {
-      type = "PROXY";
-      address = setting.proxy;
-    }
-  }
-}
-
-Future main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  var httpOverrides = HttpOverridesImpl();
-  await httpOverrides.init();
-  HttpOverrides.global = httpOverrides;
-
-  runApp(const ProviderScope(child: MyApp()));
+if (setting == null || setting.mode == ProxySettingModeEnum.direct) {
+  print('DIRECT');
+} else {
+  print('PROXY ${setting.proxy}');
 }
 ```
+
+Resolve the proxy for a specific URL:
+
+```dart
+final ProxySetting? setting =
+    await proxySetting(url: 'https://example.com');
+```
+
+`proxySetting()` returns a `ProxySetting` with the following fields:
+
+- `mode`: `proxy` or `direct`
+- `isAutoDetect`: whether automatic proxy detection is enabled
+- `proxy`: proxy host and port such as `proxy.example.com:8080`
+- `proxyBypass`: bypass list when provided by the platform
+- `configUrl`: PAC or auto-config URL when provided by the platform
+
+See [`example/lib/main.dart`](example/lib/main.dart) for a complete example app.

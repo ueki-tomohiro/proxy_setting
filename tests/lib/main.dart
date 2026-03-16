@@ -18,7 +18,7 @@ class HttpOverridesImpl extends HttpOverrides {
     return 'PROXY $address';
   }
 
-  Future init() async {
+  Future<void> init() async {
     final setting = await proxySetting();
     print(setting);
     if (setting == null || setting.mode == ProxySettingModeEnum.direct) {
@@ -81,7 +81,7 @@ class MyHomePage extends ConsumerWidget {
             ),
             Text(
               '$httpStatus',
-              style: Theme.of(context).textTheme.headline4,
+              style: Theme.of(context).textTheme.headlineMedium,
             ),
           ],
         ),

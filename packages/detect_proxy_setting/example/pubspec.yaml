@@ -1,0 +1,32 @@
+name: detect_proxy_setting_example
+description: Example app for the detect_proxy_setting plugin.
+publish_to: "none"
+
+environment:
+  sdk: ^3.11.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+  detect_proxy_setting:
+    path: ../
+
+dependency_overrides:
+  proxy_setting_android:
+    path: ../../proxy_setting_android
+  proxy_setting_ios:
+    path: ../../proxy_setting_ios
+  proxy_setting_macos:
+    path: ../../proxy_setting_macos
+  proxy_setting_platform_interface:
+    path: ../../proxy_setting_platform_interface
+  proxy_setting_windows:
+    path: ../../proxy_setting_windows
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true

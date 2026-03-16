@@ -1,12 +1,13 @@
 import 'dart:io';
 
-import 'package:riverpod/riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 
-class HttpNotifier extends StateNotifier<int?> {
-  HttpNotifier() : super(null);
+class HttpNotifier extends Notifier<int?> {
+  @override
+  int? build() => null;
 
-  Future fetch() async {
+  Future<void> fetch() async {
     state = null;
     final client = http.Client();
     try {
@@ -16,9 +17,11 @@ class HttpNotifier extends StateNotifier<int?> {
       state = response.statusCode;
     } catch (_) {
       state = HttpStatus.badRequest;
+    } finally {
+      client.close();
     }
   }
 }
 
-final httpNotifier = StateNotifierProvider.autoDispose<HttpNotifier, int?>(
-    (ref) => HttpNotifier());
+final httpNotifier =
+    NotifierProvider.autoDispose<HttpNotifier, int?>(HttpNotifier.new);

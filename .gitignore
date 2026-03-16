@@ -23,6 +23,13 @@ doc/api/
 .idea
 
 *.iml
+!melos_proxy_setting.iml
+!packages/detect_proxy_setting/melos_detect_proxy_setting.iml
+!packages/detect_proxy_setting/melos_proxy_setting.iml
+!packages/proxy_setting_ios/melos_proxy_setting_ios.iml
+!packages/proxy_setting_macos/melos_proxy_setting_macos.iml
+!packages/proxy_setting_platform_interface/melos_proxy_setting_platform_interface.iml
+!packages/proxy_setting_windows/melos_proxy_setting_windows.iml
 .gradle
 /local.properties
 /.idea/workspace.xml
