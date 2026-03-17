@@ -289,6 +289,49 @@ std::wstring ResolveManualProxyForScheme(const wchar_t *proxy,
   return default_proxy;
 }
 
+std::wstring ResolveFirstConfiguredManualProxy(const wchar_t *proxy) {
+  if (proxy == nullptr) {
+    return std::wstring();
+  }
+
+  std::wstring proxy_list(proxy);
+
+  size_t start = 0;
+  while (start <= proxy_list.size()) {
+    const size_t separator = proxy_list.find(L';', start);
+    std::wstring entry = Trim(proxy_list.substr(
+        start, separator == std::wstring::npos ? std::wstring::npos
+                                               : separator - start));
+    if (!entry.empty()) {
+      const size_t equals = entry.find(L'=');
+      if (equals == std::wstring::npos) {
+        return entry;
+      }
+
+      const std::wstring value = Trim(entry.substr(equals + 1));
+      if (!value.empty()) {
+        return value;
+      }
+    }
+
+    if (separator == std::wstring::npos) {
+      break;
+    }
+    start = separator + 1;
+  }
+
+  return std::wstring();
+}
+
+std::wstring ResolveDefaultManualProxy(const wchar_t *proxy) {
+  const std::wstring http_proxy = ResolveManualProxyForScheme(proxy, L"http");
+  if (!http_proxy.empty()) {
+    return http_proxy;
+  }
+
+  return ResolveFirstConfiguredManualProxy(proxy);
+}
+
 std::wstring ResolveManualProxyForUrl(
     const WINHTTP_CURRENT_USER_IE_PROXY_CONFIG &proxyConfig,
     const std::wstring &url) {
@@ -298,7 +341,7 @@ std::wstring ResolveManualProxyForUrl(
 
   const auto parts = ParseUrl(url);
   if (!parts.has_value()) {
-    return std::wstring(proxyConfig.lpszProxy);
+    return ResolveDefaultManualProxy(proxyConfig.lpszProxy);
   }
   if (ShouldBypassProxy(proxyConfig.lpszProxyBypass, parts->host)) {
     return std::wstring();
@@ -474,7 +517,7 @@ ProxySetting *ProxySettingPlugin::GetDefaultProxyConfig() {
 
   if (HasManualProxyConfig(proxyConfig.value)) {
     const std::wstring proxy =
-        ResolveManualProxyForScheme(proxyConfig.value.lpszProxy, L"http");
+        ResolveDefaultManualProxy(proxyConfig.value.lpszProxy);
     const WINHTTP_PROXY_INFO proxyInfo = CreateProxyInfoFromProxyString(proxy);
     return ConvertSetting(proxyConfig.value, proxyInfo);
   }
