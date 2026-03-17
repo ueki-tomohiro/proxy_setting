@@ -1,6 +1,21 @@
 group 'jp.playon.proxy_setting_android'
 version '1.0-SNAPSHOT'
 
+import java.util.Properties
+
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader('UTF-8') { reader ->
+        localProperties.load(reader)
+    }
+}
+
+def flutterSdkPath = localProperties.getProperty('flutter.sdk')
+def flutterJarPath = flutterSdkPath == null
+    ? null
+    : "${flutterSdkPath}/bin/cache/artifacts/engine/android-arm64/flutter.jar"
+
 buildscript {
     ext.kotlin_version = '1.6.10'
     repositories {
@@ -47,5 +62,6 @@ android {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    compileOnly files(flutterJarPath)
     testImplementation 'junit:junit:4.13.2'
 }

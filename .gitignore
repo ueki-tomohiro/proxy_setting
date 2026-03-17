@@ -31,7 +31,8 @@ doc/api/
 !packages/proxy_setting_platform_interface/melos_proxy_setting_platform_interface.iml
 !packages/proxy_setting_windows/melos_proxy_setting_windows.iml
 .gradle
-/local.properties
+**/local.properties
+packages/proxy_setting_android/android/gradle.properties
 /.idea/workspace.xml
 /.idea/libraries
 .DS_Store

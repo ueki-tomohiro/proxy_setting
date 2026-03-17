@@ -2,7 +2,6 @@ package jp.playon.proxy_setting_android
 import android.content.Context
 import android.os.Build
 import android.net.ConnectivityManager
-import androidx.annotation.NonNull
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
@@ -14,14 +13,14 @@ public final class ProxySettingPlugin: FlutterPlugin, MethodCallHandler {
   private lateinit var channel : MethodChannel
   private lateinit var flutterPluginBinding: FlutterPlugin.FlutterPluginBinding
 
-  override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+  override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
     this.flutterPluginBinding = flutterPluginBinding
 
     channel = MethodChannel(flutterPluginBinding.binaryMessenger, "playon.jp/proxy_setting_android")
     channel.setMethodCallHandler(this)
   }
 
-  override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
+  override fun onMethodCall(call: MethodCall, result: Result) {
     when (call.method) {
       "proxySetting" -> {
         val url = call.argument<String>("url")
@@ -43,7 +42,7 @@ public final class ProxySettingPlugin: FlutterPlugin, MethodCallHandler {
     }
   }
 
-  override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
+  override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
     channel.setMethodCallHandler(null)
   }
 
