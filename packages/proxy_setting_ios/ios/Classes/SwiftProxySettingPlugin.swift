@@ -39,7 +39,15 @@ public class SwiftProxySettingPlugin: NSObject, FlutterPlugin {
           details: ""))
         return
       }
-      result(buildSetting(proxySettings: proxySetting, proxyMap: proxyMap, urlString: urlString))
+      DispatchQueue.global(qos: .userInitiated).async {
+        let setting = self.buildSetting(
+          proxySettings: proxySetting,
+          proxyMap: proxyMap,
+          urlString: urlString)
+        DispatchQueue.main.async {
+          result(setting)
+        }
+      }
     default:
       result(FlutterMethodNotImplemented)
     }
