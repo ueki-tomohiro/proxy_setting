@@ -1,5 +1,16 @@
+import CFNetwork
 import FlutterMacOS
 import Foundation
+
+private final class AutoConfigurationContext {
+  var proxies: [[String: Any]]?
+  var completed = false
+}
+
+private struct ResolvedProxy {
+  let mode: String
+  let proxy: String
+}
 
 public class ProxySettingPlugin: NSObject, FlutterPlugin {
   public static func register(with registrar: FlutterPluginRegistrar) {
@@ -21,41 +32,198 @@ public class ProxySettingPlugin: NSObject, FlutterPlugin {
           details: ""))
         return
       }
-      guard let proxyMap = proxySetting as? [String : Any]  else {
+      guard let proxyMap = proxySetting as? [String: Any] else {
         result(FlutterError(
           code: "proxy_error",
           message: "Failed to load CFNetworkCopySystemProxySettings.",
           details: ""))
         return
       }
-
-      var setting: [String: Any] = [:]
-      setting["mode"] = getMapInteger(map: proxyMap, key: kCFNetworkProxiesHTTPEnable) == 1 ? "proxy" : "direct"
-      setting["isAutoDetect"] = getMapInteger(map: proxyMap, key: kCFNetworkProxiesProxyAutoConfigEnable)
-      setting["configUrl"] = getMapString(map: proxyMap, key: kCFNetworkProxiesProxyAutoConfigURLString)
-
-      let proxy: String
-      let port: Int?
-      if let urlString = urlString , let url = CFURLCreateWithString(kCFAllocatorDefault, urlString as CFString, nil),  let proxies = CFNetworkCopyProxiesForURL(url, proxySetting).takeRetainedValue() as? [[String: Any]], proxies.count > 0 {
-        proxy = getMapString(map: proxies[0], key: kCFNetworkProxiesHTTPProxy)
-        port = getMapInteger(map: proxies[0], key: kCFNetworkProxiesHTTPPort)
-      } else {
-        proxy = getMapString(map: proxyMap, key: kCFNetworkProxiesHTTPProxy)
-        port = getMapInteger(map: proxyMap, key: kCFNetworkProxiesHTTPPort)
-      }
-        if proxy.isEmpty {
-          setting["proxy"] = ""
-        } else if let port = port {
-          setting["proxy"] = "\(proxy):\(port)"
-        } else {
-          setting["proxy"] = proxy
-        }
-      
-      setting["proxyBypass"] = ""
-      result(setting)
+      result(buildSetting(proxySettings: proxySetting, proxyMap: proxyMap, urlString: urlString))
     default:
       result(FlutterMethodNotImplemented)
     }
+  }
+
+  private func buildSetting(
+    proxySettings: CFDictionary,
+    proxyMap: [String: Any],
+    urlString: String?
+  ) -> [String: Any] {
+    let resolvedProxy = resolveProxy(
+      urlString: urlString,
+      proxySettings: proxySettings,
+      proxyMap: proxyMap)
+
+    return [
+      "mode": resolvedProxy.mode,
+      "isAutoDetect": getMapInteger(map: proxyMap, key: kCFNetworkProxiesProxyAutoConfigEnable) ?? 0,
+      "configUrl": getMapString(map: proxyMap, key: kCFNetworkProxiesProxyAutoConfigURLString),
+      "proxy": resolvedProxy.proxy,
+      "proxyBypass": "",
+    ]
+  }
+
+  private func resolveProxy(
+    urlString: String?,
+    proxySettings: CFDictionary,
+    proxyMap: [String: Any]
+  ) -> ResolvedProxy {
+    if let urlString,
+       let url = CFURLCreateWithString(kCFAllocatorDefault, urlString as CFString, nil),
+       let proxies = CFNetworkCopyProxiesForURL(url, proxySettings).takeRetainedValue() as? [[String: Any]],
+       let resolved = resolveProxyList(proxies, targetURL: url) {
+      return resolved
+    }
+
+    return defaultResolvedProxy(from: proxyMap)
+  }
+
+  private func resolveProxyList(_ proxies: [[String: Any]], targetURL: CFURL) -> ResolvedProxy? {
+    for proxy in proxies {
+      if let resolvedProxy = resolveProxyEntry(proxy, targetURL: targetURL) {
+        return resolvedProxy
+      }
+    }
+    return nil
+  }
+
+  private func resolveProxyEntry(_ proxy: [String: Any], targetURL: CFURL) -> ResolvedProxy? {
+    let proxyType = getMapString(map: proxy, key: kCFProxyTypeKey)
+
+    if proxyType == (kCFProxyTypeNone as String) {
+      return ResolvedProxy(mode: "direct", proxy: "")
+    }
+
+    if proxyType == (kCFProxyTypeAutoConfigurationURL as String) {
+      guard let proxyAutoConfigurationURLString = getOptionalMapString(
+        map: proxy,
+        key: kCFProxyAutoConfigurationURLKey),
+        let proxyAutoConfigurationURL = CFURLCreateWithString(
+          kCFAllocatorDefault,
+          proxyAutoConfigurationURLString as CFString,
+          nil),
+        let proxies = executeAutoConfigurationURL(
+          proxyAutoConfigurationURL,
+          targetURL: targetURL)
+      else {
+        return nil
+      }
+
+      return resolveProxyList(proxies, targetURL: targetURL)
+    }
+
+    if proxyType == (kCFProxyTypeAutoConfigurationJavaScript as String) {
+      guard let script = getOptionalMapString(
+        map: proxy,
+        key: kCFProxyAutoConfigurationJavaScriptKey),
+        let proxies = executeAutoConfigurationScript(script as CFString, targetURL: targetURL)
+      else {
+        return nil
+      }
+
+      return resolveProxyList(proxies, targetURL: targetURL)
+    }
+
+    let proxyHost = getMapString(map: proxy, key: kCFProxyHostNameKey)
+    guard !proxyHost.isEmpty else {
+      return nil
+    }
+    let proxyPort = getMapInteger(map: proxy, key: kCFProxyPortNumberKey)
+    return ResolvedProxy(mode: "proxy", proxy: formatProxy(host: proxyHost, port: proxyPort))
+  }
+
+  private func defaultResolvedProxy(from proxyMap: [String: Any]) -> ResolvedProxy {
+    guard getMapInteger(map: proxyMap, key: kCFNetworkProxiesHTTPEnable) == 1 else {
+      return ResolvedProxy(mode: "direct", proxy: "")
+    }
+
+    let proxyHost = getMapString(map: proxyMap, key: kCFNetworkProxiesHTTPProxy)
+    guard !proxyHost.isEmpty else {
+      return ResolvedProxy(mode: "direct", proxy: "")
+    }
+
+    let proxyPort = getMapInteger(map: proxyMap, key: kCFNetworkProxiesHTTPPort)
+    return ResolvedProxy(mode: "proxy", proxy: formatProxy(host: proxyHost, port: proxyPort))
+  }
+
+  private func executeAutoConfigurationURL(
+    _ proxyAutoConfigurationURL: CFURL,
+    targetURL: CFURL
+  ) -> [[String: Any]]? {
+    let context = AutoConfigurationContext()
+    let unmanagedContext = Unmanaged.passRetained(context)
+    defer { unmanagedContext.release() }
+
+    var clientContext = CFStreamClientContext(
+      version: 0,
+      info: unmanagedContext.toOpaque(),
+      retain: nil,
+      release: nil,
+      copyDescription: nil)
+
+    let callback: CFProxyAutoConfigurationResultCallback = { client, proxyList, _ in
+      let context = Unmanaged<AutoConfigurationContext>.fromOpaque(client).takeUnretainedValue()
+      if let proxyList = proxyList as? [[String: Any]] {
+        context.proxies = proxyList
+      }
+      context.completed = true
+    }
+
+    let source = CFNetworkExecuteProxyAutoConfigurationURL(
+      proxyAutoConfigurationURL,
+      targetURL,
+      callback,
+      &clientContext)
+
+    return runAutoConfigurationSource(source, context: context)
+  }
+
+  private func executeAutoConfigurationScript(_ script: CFString, targetURL: CFURL) -> [[String: Any]]? {
+    let context = AutoConfigurationContext()
+    let unmanagedContext = Unmanaged.passRetained(context)
+    defer { unmanagedContext.release() }
+
+    var clientContext = CFStreamClientContext(
+      version: 0,
+      info: unmanagedContext.toOpaque(),
+      retain: nil,
+      release: nil,
+      copyDescription: nil)
+
+    let callback: CFProxyAutoConfigurationResultCallback = { client, proxyList, _ in
+      let context = Unmanaged<AutoConfigurationContext>.fromOpaque(client).takeUnretainedValue()
+      if let proxyList = proxyList as? [[String: Any]] {
+        context.proxies = proxyList
+      }
+      context.completed = true
+    }
+
+    let source = CFNetworkExecuteProxyAutoConfigurationScript(
+      script,
+      targetURL,
+      callback,
+      &clientContext)
+
+    return runAutoConfigurationSource(source, context: context)
+  }
+
+  private func runAutoConfigurationSource(
+    _ source: CFRunLoopSource,
+    context: AutoConfigurationContext
+  ) -> [[String: Any]]? {
+    let runLoop = CFRunLoopGetCurrent()
+    CFRunLoopAddSource(runLoop, source, CFRunLoopMode.defaultMode)
+    defer {
+      CFRunLoopRemoveSource(runLoop, source, CFRunLoopMode.defaultMode)
+    }
+
+    let timeout = Date().addingTimeInterval(5)
+    while !context.completed && Date() < timeout {
+      CFRunLoopRunInMode(CFRunLoopMode.defaultMode, 0.05, true)
+    }
+
+    return context.proxies
   }
 
   private func getProxySetting() -> CFDictionary? {
@@ -65,19 +233,35 @@ public class ProxySettingPlugin: NSObject, FlutterPlugin {
     return setting
   }
 
-  private func getMapInteger(map: [String:Any], key: CFString) -> Int? {
+  private func getMapInteger(map: [String: Any], key: CFString) -> Int? {
     guard let value = map[key as String] as? NSNumber else {
       return nil
     }
-    
+
     return value.intValue
   }
 
-  private func getMapString(map: [String:Any], key: CFString) -> String {
+  private func getOptionalMapString(map: [String: Any], key: CFString) -> String? {
+    guard let value = map[key as String] as? String, !value.isEmpty else {
+      return nil
+    }
+
+    return value
+  }
+
+  private func getMapString(map: [String: Any], key: CFString) -> String {
     guard let value = map[key as String] as? String else {
       return ""
     }
-    
+
     return value
+  }
+
+  private func formatProxy(host: String, port: Int?) -> String {
+    guard let port else {
+      return host
+    }
+
+    return "\(host):\(port)"
   }
 }
