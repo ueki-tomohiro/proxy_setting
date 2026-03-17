@@ -7,6 +7,23 @@ private final class AutoConfigurationContext {
   var completed = false
 }
 
+private let retainAutoConfigurationContext: CFAllocatorRetainCallBack = { info in
+  guard let info else {
+    return nil
+  }
+
+  _ = Unmanaged<AutoConfigurationContext>.fromOpaque(info).retain()
+  return info
+}
+
+private let releaseAutoConfigurationContext: CFAllocatorReleaseCallBack = { info in
+  guard let info else {
+    return
+  }
+
+  Unmanaged<AutoConfigurationContext>.fromOpaque(info).release()
+}
+
 private struct ResolvedProxy {
   let mode: String
   let proxy: String
@@ -160,17 +177,19 @@ public class ProxySettingPlugin: NSObject, FlutterPlugin {
     targetURL: CFURL
   ) -> [[String: Any]]? {
     let context = AutoConfigurationContext()
-    let unmanagedContext = Unmanaged.passRetained(context)
-    defer { unmanagedContext.release() }
 
     var clientContext = CFStreamClientContext(
       version: 0,
-      info: unmanagedContext.toOpaque(),
-      retain: nil,
-      release: nil,
+      info: Unmanaged.passUnretained(context).toOpaque(),
+      retain: retainAutoConfigurationContext,
+      release: releaseAutoConfigurationContext,
       copyDescription: nil)
 
     let callback: CFProxyAutoConfigurationResultCallback = { client, proxyList, _ in
+      guard let client else {
+        return
+      }
+
       let context = Unmanaged<AutoConfigurationContext>.fromOpaque(client).takeUnretainedValue()
       if let proxyList = proxyList as? [[String: Any]] {
         context.proxies = proxyList
@@ -189,17 +208,19 @@ public class ProxySettingPlugin: NSObject, FlutterPlugin {
 
   private func executeAutoConfigurationScript(_ script: CFString, targetURL: CFURL) -> [[String: Any]]? {
     let context = AutoConfigurationContext()
-    let unmanagedContext = Unmanaged.passRetained(context)
-    defer { unmanagedContext.release() }
 
     var clientContext = CFStreamClientContext(
       version: 0,
-      info: unmanagedContext.toOpaque(),
-      retain: nil,
-      release: nil,
+      info: Unmanaged.passUnretained(context).toOpaque(),
+      retain: retainAutoConfigurationContext,
+      release: releaseAutoConfigurationContext,
       copyDescription: nil)
 
     let callback: CFProxyAutoConfigurationResultCallback = { client, proxyList, _ in
+      guard let client else {
+        return
+      }
+
       let context = Unmanaged<AutoConfigurationContext>.fromOpaque(client).takeUnretainedValue()
       if let proxyList = proxyList as? [[String: Any]] {
         context.proxies = proxyList
@@ -229,6 +250,11 @@ public class ProxySettingPlugin: NSObject, FlutterPlugin {
     let deadline = Date().addingTimeInterval(5)
     while !context.completed && Date() < deadline {
       CFRunLoopRunInMode(CFRunLoopMode.defaultMode, 0.05, true)
+    }
+
+    if !context.completed {
+      CFRunLoopSourceInvalidate(source)
+      return nil
     }
 
     return context.proxies
