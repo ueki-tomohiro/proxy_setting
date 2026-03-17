@@ -66,6 +66,20 @@ struct UrlParts {
   std::wstring host;
 };
 
+bool LoadCurrentUserProxyConfig(
+    SystemApis *system_apis, ScopedIeProxyConfig *proxy_config) {
+  if (system_apis->GetIEProxyConfigForCurrentUser(&proxy_config->value)) {
+    return true;
+  }
+
+  if (::GetLastError() == ERROR_FILE_NOT_FOUND) {
+    ::SetLastError(ERROR_SUCCESS);
+    return true;
+  }
+
+  return false;
+}
+
 std::wstring Utf16FromUtf8(const std::string &utf8_string) {
   if (utf8_string.empty()) {
     return std::wstring();
@@ -298,6 +312,19 @@ bool HasAutoProxyConfig(
          (proxyConfig.lpszAutoConfigUrl != nullptr &&
           proxyConfig.lpszAutoConfigUrl[0] != L'\0');
 }
+
+bool HasManualProxyConfig(
+    const WINHTTP_CURRENT_USER_IE_PROXY_CONFIG &proxyConfig) {
+  return proxyConfig.lpszProxy != nullptr && proxyConfig.lpszProxy[0] != L'\0';
+}
+
+WINHTTP_PROXY_INFO CreateProxyInfoFromProxyString(const std::wstring &proxy) {
+  WINHTTP_PROXY_INFO proxy_info{};
+  proxy_info.dwAccessType = proxy.empty() ? WINHTTP_ACCESS_TYPE_NO_PROXY
+                                          : WINHTTP_ACCESS_TYPE_NAMED_PROXY;
+  proxy_info.lpszProxy = proxy.empty() ? nullptr : const_cast<LPWSTR>(proxy.c_str());
+  return proxy_info;
+}
 } // namespace
 
 // static
@@ -369,9 +396,7 @@ void ProxySettingPlugin::HandleMethodCall(
 
 ProxySetting *ProxySettingPlugin::GetProxyForUrl(std::string url) {
   ScopedIeProxyConfig proxyConfig;
-  BOOL apiResult =
-      system_apis_->GetIEProxyConfigForCurrentUser(&proxyConfig.value);
-  if (apiResult == FALSE) {
+  if (!LoadCurrentUserProxyConfig(system_apis_.get(), &proxyConfig)) {
     return nullptr;
   }
 
@@ -381,16 +406,21 @@ ProxySetting *ProxySettingPlugin::GetProxyForUrl(std::string url) {
     return nullptr;
   }
 
+  const bool has_manual_proxy = HasManualProxyConfig(proxyConfig.value);
+  const std::wstring resolved_manual_proxy =
+      ResolveManualProxyForUrl(proxyConfig.value, wide_url);
   if (!HasAutoProxyConfig(proxyConfig.value)) {
-    WINHTTP_PROXY_INFO proxyInfo{};
-    std::wstring resolved_proxy =
-        ResolveManualProxyForUrl(proxyConfig.value, wide_url);
-    proxyInfo.dwAccessType = resolved_proxy.empty()
-                                 ? WINHTTP_ACCESS_TYPE_NO_PROXY
-                                 : WINHTTP_ACCESS_TYPE_NAMED_PROXY;
-    proxyInfo.lpszProxy =
-        resolved_proxy.empty() ? nullptr : resolved_proxy.data();
-    return ConvertSetting(proxyConfig.value, proxyInfo);
+    if (has_manual_proxy) {
+      const WINHTTP_PROXY_INFO proxyInfo =
+          CreateProxyInfoFromProxyString(resolved_manual_proxy);
+      return ConvertSetting(proxyConfig.value, proxyInfo);
+    }
+
+    ScopedProxyInfo defaultProxyInfo;
+    if (system_apis_->GetDefaultProxyConfiguration(&defaultProxyInfo.value)) {
+      return ConvertSetting(proxyConfig.value, defaultProxyInfo.value);
+    }
+    return nullptr;
   }
 
   ScopedSessionHandle session(system_apis_->HttpOpen(
@@ -414,20 +444,21 @@ ProxySetting *ProxySettingPlugin::GetProxyForUrl(std::string url) {
   proxyOptions.fAutoLogonIfChallenged = TRUE;
 
   ScopedProxyInfo proxyInfo;
-  apiResult = system_apis_->GetProxyForUrl(session.value, wide_url.c_str(),
-                                           &proxyOptions, &proxyInfo.value);
+  BOOL apiResult = system_apis_->GetProxyForUrl(
+      session.value, wide_url.c_str(), &proxyOptions, &proxyInfo.value);
   if (apiResult) {
     return ConvertSetting(proxyConfig.value, proxyInfo.value);
-  } else if (ERROR_WINHTTP_AUTODETECTION_FAILED == GetLastError()) {
-    WINHTTP_PROXY_INFO fallbackInfo{};
-    std::wstring resolved_proxy =
-        ResolveManualProxyForUrl(proxyConfig.value, wide_url);
-    fallbackInfo.dwAccessType = resolved_proxy.empty()
-                                    ? WINHTTP_ACCESS_TYPE_NO_PROXY
-                                    : WINHTTP_ACCESS_TYPE_NAMED_PROXY;
-    fallbackInfo.lpszProxy =
-        resolved_proxy.empty() ? nullptr : resolved_proxy.data();
+  }
+
+  if (has_manual_proxy) {
+    const WINHTTP_PROXY_INFO fallbackInfo =
+        CreateProxyInfoFromProxyString(resolved_manual_proxy);
     return ConvertSetting(proxyConfig.value, fallbackInfo);
+  }
+
+  ScopedProxyInfo defaultProxyInfo;
+  if (system_apis_->GetDefaultProxyConfiguration(&defaultProxyInfo.value)) {
+    return ConvertSetting(proxyConfig.value, defaultProxyInfo.value);
   }
 
   return nullptr;
@@ -435,19 +466,23 @@ ProxySetting *ProxySettingPlugin::GetProxyForUrl(std::string url) {
 
 ProxySetting *ProxySettingPlugin::GetDefaultProxyConfig() {
   ScopedIeProxyConfig proxyConfig;
-  BOOL apiResult =
-      system_apis_->GetIEProxyConfigForCurrentUser(&proxyConfig.value);
-  if (apiResult == FALSE) {
+  if (!LoadCurrentUserProxyConfig(system_apis_.get(), &proxyConfig)) {
     return nullptr;
   }
 
-  WINHTTP_PROXY_INFO proxyInfo{};
-  std::wstring proxy =
-      ResolveManualProxyForScheme(proxyConfig.value.lpszProxy, L"http");
-  proxyInfo.dwAccessType = proxy.empty() ? WINHTTP_ACCESS_TYPE_NO_PROXY
-                                         : WINHTTP_ACCESS_TYPE_NAMED_PROXY;
-  proxyInfo.lpszProxy = proxy.empty() ? nullptr : proxy.data();
-  return ConvertSetting(proxyConfig.value, proxyInfo);
+  if (HasManualProxyConfig(proxyConfig.value)) {
+    const std::wstring proxy =
+        ResolveManualProxyForScheme(proxyConfig.value.lpszProxy, L"http");
+    const WINHTTP_PROXY_INFO proxyInfo = CreateProxyInfoFromProxyString(proxy);
+    return ConvertSetting(proxyConfig.value, proxyInfo);
+  }
+
+  ScopedProxyInfo defaultProxyInfo;
+  if (system_apis_->GetDefaultProxyConfiguration(&defaultProxyInfo.value)) {
+    return ConvertSetting(proxyConfig.value, defaultProxyInfo.value);
+  }
+
+  return nullptr;
 }
 
 ProxySetting *ProxySettingPlugin::ConvertSetting(
@@ -467,6 +502,9 @@ ProxySetting *ProxySettingPlugin::ConvertSetting(
   }
   setting->isAutoDetect = proxyConfig.fAutoDetect == TRUE;
   setting->proxyBypass = Utf8FromWidePtr(proxyConfig.lpszProxyBypass);
+  if (setting->proxyBypass.empty()) {
+    setting->proxyBypass = Utf8FromWidePtr(proxyInfo.lpszProxyBypass);
+  }
   setting->configUrl = Utf8FromWidePtr(proxyConfig.lpszAutoConfigUrl);
 
   return setting;
