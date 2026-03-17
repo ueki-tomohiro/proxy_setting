@@ -15,7 +15,7 @@ Supported platforms:
 
 ```yaml
 dependencies:
-  detect_proxy_setting: ^0.0.7
+  detect_proxy_setting: ^0.0.8
 ```
 
 ## Usage

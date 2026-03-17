@@ -1,3 +1,7 @@
+## 0.0.5
+* fix proxy resolution for URL requests
+* restore WinHTTP default proxy fallback
+
 ## 0.0.4
 * check proxy via url
 
