@@ -31,7 +31,7 @@ Add `detect_proxy_setting` to your `pubspec.yaml`.
 
 ```yaml
 dependencies:
-  detect_proxy_setting: ^0.0.6
+  detect_proxy_setting: ^0.0.8
 ```
 
 ## Usage

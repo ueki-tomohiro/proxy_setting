@@ -1,3 +1,7 @@
+## 0.0.8
+* update platform package versions
+* improve plugin documentation and example package
+
 ## 0.0.7
 * add API documentation
 * add example app

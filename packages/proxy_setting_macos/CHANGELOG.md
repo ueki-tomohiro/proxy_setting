@@ -1,3 +1,7 @@
+## 0.0.5
+* align proxy resolution with iOS
+* avoid blocking PAC resolution on the main thread
+
 ## 0.0.4
 * check proxy via url
 

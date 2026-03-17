@@ -13,13 +13,11 @@
 
 #include "system_apis.h"
 
-#define MAX_LEN 2048
-
 namespace proxy_setting_plugin {
 class ProxySetting {
 public:
   std::string mode;
-  boolean isAutoDetect;
+  bool isAutoDetect;
   std::string proxy;
   std::string proxyBypass;
   std::string configUrl;
@@ -52,9 +50,9 @@ public:
 private:
   ProxySetting *GetProxyForUrl(std::string url);
   ProxySetting *GetDefaultProxyConfig();
-  ProxySetting *ProxySettingPlugin::ConvertSetting(
-      WINHTTP_CURRENT_USER_IE_PROXY_CONFIG &proxyConfig,
-      WINHTTP_PROXY_INFO &proxyInfo);
+  ProxySetting *ConvertSetting(
+      const WINHTTP_CURRENT_USER_IE_PROXY_CONFIG &proxyConfig,
+      const WINHTTP_PROXY_INFO &proxyInfo);
 
   std::unique_ptr<SystemApis> system_apis_;
 };
