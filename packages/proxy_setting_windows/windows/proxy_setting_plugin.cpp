@@ -318,6 +318,8 @@ bool HasManualProxyConfig(
   return proxyConfig.lpszProxy != nullptr && proxyConfig.lpszProxy[0] != L'\0';
 }
 
+// Returns a WINHTTP_PROXY_INFO whose lpszProxy points into |proxy|.
+// The caller must ensure |proxy| outlives the returned struct.
 WINHTTP_PROXY_INFO CreateProxyInfoFromProxyString(const std::wstring &proxy) {
   WINHTTP_PROXY_INFO proxy_info{};
   proxy_info.dwAccessType = proxy.empty() ? WINHTTP_ACCESS_TYPE_NO_PROXY

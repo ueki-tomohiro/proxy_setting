@@ -12,28 +12,39 @@ void main() {
       'playon.jp/proxy_setting_windows',
     );
     final List<MethodCall> log = <MethodCall>[];
-    channel.setMockMethodCallHandler((MethodCall methodCall) async {
-      log.add(methodCall);
-      if (methodCall.method == "proxySetting") {
-        return <String, Object>{
-          "mode": "direct",
-          "isAutoDetect": 0,
-          "proxy": "",
-          "proxyBypass": "",
-          "configUrl": "",
-        };
-      }
-      return null;
+    Map<String, Object?>? result;
+
+    setUp(() {
+      result = <String, Object?>{
+        'mode': 'direct',
+        'isAutoDetect': 0,
+        'proxy': '',
+        'proxyBypass': '',
+        'configUrl': '',
+      };
+
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
+            log.add(methodCall);
+            if (methodCall.method == 'proxySetting') {
+              return result;
+            }
+            return null;
+          });
     });
 
     tearDown(() {
       log.clear();
+      result = null;
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, null);
     });
 
     test('registers instance', () {
       ProxySettingWindows.registerWith();
       expect(ProxySettingPlatform.instance, isA<ProxySettingWindows>());
     });
+
     test('proxySetting', () async {
       final ProxySettingWindows setting = ProxySettingWindows();
       await setting.proxySetting(url: 'http://example.com/');
@@ -65,19 +76,13 @@ void main() {
     });
 
     test('proxySetting maps boolean native response', () async {
-      channel.setMockMethodCallHandler((MethodCall methodCall) async {
-        log.add(methodCall);
-        if (methodCall.method == "proxySetting") {
-          return <String, Object>{
-            "mode": "proxy",
-            "isAutoDetect": true,
-            "proxy": "proxy.example.com:8080",
-            "proxyBypass": "localhost,127.0.0.1",
-            "configUrl": "https://proxy.example.com/proxy.pac",
-          };
-        }
-        return null;
-      });
+      result = <String, Object?>{
+        'mode': 'proxy',
+        'isAutoDetect': true,
+        'proxy': 'proxy.example.com:8080',
+        'proxyBypass': 'localhost,127.0.0.1',
+        'configUrl': 'https://proxy.example.com/proxy.pac',
+      };
 
       final ProxySettingWindows setting = ProxySettingWindows();
       final proxySetting = await setting.proxySetting(
@@ -90,6 +95,17 @@ void main() {
       expect(proxySetting.proxy, 'proxy.example.com:8080');
       expect(proxySetting.proxyBypass, 'localhost,127.0.0.1');
       expect(proxySetting.configUrl, 'https://proxy.example.com/proxy.pac');
+    });
+
+    test('proxySetting returns null when native response is null', () async {
+      result = null;
+
+      final ProxySettingWindows setting = ProxySettingWindows();
+      final proxySetting = await setting.proxySetting(
+        url: 'http://example.com/',
+      );
+
+      expect(proxySetting, isNull);
     });
   });
 }

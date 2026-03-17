@@ -226,8 +226,8 @@ public class ProxySettingPlugin: NSObject, FlutterPlugin {
       CFRunLoopRemoveSource(runLoop, source, CFRunLoopMode.defaultMode)
     }
 
-    let timeout = Date().addingTimeInterval(5)
-    while !context.completed && Date() < timeout {
+    let deadline = Date().addingTimeInterval(5)
+    while !context.completed && Date() < deadline {
       CFRunLoopRunInMode(CFRunLoopMode.defaultMode, 0.05, true)
     }
 

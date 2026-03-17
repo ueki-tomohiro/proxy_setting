@@ -62,6 +62,8 @@ android {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    compileOnly files(flutterJarPath)
+    if (flutterJarPath != null) {
+        compileOnly files(flutterJarPath)
+    }
     testImplementation 'junit:junit:4.13.2'
 }
