@@ -1,3 +1,6 @@
+## 0.0.9
+* update iOS and macOS package versions for Xcode 16 / Swift 6 compatibility
+
 ## 0.0.8
 * update platform package versions
 * improve plugin documentation and example package

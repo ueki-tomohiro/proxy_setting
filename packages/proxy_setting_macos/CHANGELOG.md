@@ -1,3 +1,6 @@
+## 0.0.6
+* fix Xcode 16 / Swift 6 callback compatibility
+
 ## 0.0.5
 * align proxy resolution with iOS
 * avoid blocking PAC resolution on the main thread

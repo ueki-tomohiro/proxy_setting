@@ -7,7 +7,13 @@ private final class AutoConfigurationContext {
   var completed = false
 }
 
-private let retainAutoConfigurationContext: CFAllocatorRetainCallBack = { info in
+private typealias AutoConfigurationRetainCallBack =
+  @convention(c) (UnsafeMutableRawPointer?) -> UnsafeMutableRawPointer?
+private typealias AutoConfigurationReleaseCallBack =
+  @convention(c) (UnsafeMutableRawPointer?) -> Void
+
+// Xcode 16 / Swift 6 expects mutable raw-pointer callbacks in CFStreamClientContext.
+private let retainAutoConfigurationContext: AutoConfigurationRetainCallBack = { info in
   guard let info else {
     return nil
   }
@@ -16,7 +22,7 @@ private let retainAutoConfigurationContext: CFAllocatorRetainCallBack = { info i
   return info
 }
 
-private let releaseAutoConfigurationContext: CFAllocatorReleaseCallBack = { info in
+private let releaseAutoConfigurationContext: AutoConfigurationReleaseCallBack = { info in
   guard let info else {
     return
   }
@@ -183,10 +189,6 @@ public class SwiftProxySettingPlugin: NSObject, FlutterPlugin {
       copyDescription: nil)
 
     let callback: CFProxyAutoConfigurationResultCallback = { client, proxyList, _ in
-      guard let client else {
-        return
-      }
-
       let context = Unmanaged<AutoConfigurationContext>.fromOpaque(client).takeUnretainedValue()
       if let proxyList = proxyList as? [[String: Any]] {
         context.proxies = proxyList
@@ -214,10 +216,6 @@ public class SwiftProxySettingPlugin: NSObject, FlutterPlugin {
       copyDescription: nil)
 
     let callback: CFProxyAutoConfigurationResultCallback = { client, proxyList, _ in
-      guard let client else {
-        return
-      }
-
       let context = Unmanaged<AutoConfigurationContext>.fromOpaque(client).takeUnretainedValue()
       if let proxyList = proxyList as? [[String: Any]] {
         context.proxies = proxyList

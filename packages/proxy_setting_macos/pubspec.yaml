@@ -1,7 +1,7 @@
 name: proxy_setting_macos
 description: MacOS implementation of the detect_proxy_setting plugin.
 repository: https://github.com/ueki-tomohiro/proxy_setting/tree/main/packages/proxy_setting_macos
-version: 0.0.5
+version: 0.0.6
 
 environment:
   sdk: ^3.11.1

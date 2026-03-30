@@ -3,7 +3,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'proxy_setting_macos'
-  s.version          = '0.0.2'
+  s.version          = '0.0.6'
   s.summary          = 'MacOS implementation of the detect_proxy_setting plugin.'
   s.description      = <<-DESC
   A macOS implementation of the detect_proxy_setting plugin.
@@ -18,4 +18,3 @@ Pod::Spec.new do |s|
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES' }
   s.swift_version = '5.0'
   end
-

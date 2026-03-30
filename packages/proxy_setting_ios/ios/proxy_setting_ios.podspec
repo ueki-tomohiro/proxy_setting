@@ -3,7 +3,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'proxy_setting_ios'
-  s.version          = '0.0.2'
+  s.version          = '0.0.5'
   s.summary          = 'iOS implementation of the detect_proxy_setting plugin.'
   s.description      = <<-DESC
   An iOS implementation of the detect_proxy_setting plugin.
@@ -18,4 +18,3 @@ Pod::Spec.new do |s|
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }
   s.swift_version = '5.0'
 end
-
