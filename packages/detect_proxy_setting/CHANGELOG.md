@@ -1,3 +1,6 @@
+## 0.0.10
+* update Android package version for Android Gradle Plugin namespace compatibility
+
 ## 0.0.9
 * update iOS and macOS package versions for Xcode 16 / Swift 6 compatibility
 
