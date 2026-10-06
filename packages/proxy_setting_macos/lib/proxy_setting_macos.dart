@@ -14,21 +14,24 @@ class ProxySettingMacOS extends ProxySettingPlatform {
 
   @override
   Future<ProxySetting?> proxySetting({String? url}) async {
-    return _channel.invokeMethod<dynamic>(
-      'proxySetting',
-      <String, Object?>{'url': url},
-    ).then((value) => value == null
-        ? null
-        : ProxySetting(
-            mode: value["mode"] == "proxy"
-                ? ProxySettingModeEnum.proxy
-                : ProxySettingModeEnum.direct,
-            isAutoDetect:
-                value["isAutoDetect"] != null && value["isAutoDetect"] == 1
-                    ? true
-                    : false,
-            proxy: value["proxy"]?.toString() ?? "",
-            proxyBypass: value["proxyBypass"]?.toString() ?? "",
-            configUrl: value["configUrl"]?.toString() ?? ""));
+    return _channel
+        .invokeMethod<dynamic>('proxySetting', <String, Object?>{'url': url})
+        .then(
+          (value) => value == null
+              ? null
+              : ProxySetting(
+                  mode: value["mode"] == "proxy"
+                      ? ProxySettingModeEnum.proxy
+                      : ProxySettingModeEnum.direct,
+                  isAutoDetect:
+                      value["isAutoDetect"] != null &&
+                          value["isAutoDetect"] == 1
+                      ? true
+                      : false,
+                  proxy: value["proxy"]?.toString() ?? "",
+                  proxyBypass: value["proxyBypass"]?.toString() ?? "",
+                  configUrl: value["configUrl"]?.toString() ?? "",
+                ),
+        );
   }
 }

@@ -11,9 +11,7 @@ class HttpNotifier extends Notifier<int?> {
     state = null;
     final client = http.Client();
     try {
-      final response = await client.get(
-        Uri.parse("https://playon.jp"),
-      );
+      final response = await client.get(Uri.parse("https://playon.jp"));
       state = response.statusCode;
     } catch (_) {
       state = HttpStatus.badRequest;
@@ -23,5 +21,6 @@ class HttpNotifier extends Notifier<int?> {
   }
 }
 
-final httpNotifier =
-    NotifierProvider.autoDispose<HttpNotifier, int?>(HttpNotifier.new);
+final httpNotifier = NotifierProvider.autoDispose<HttpNotifier, int?>(
+  HttpNotifier.new,
+);
