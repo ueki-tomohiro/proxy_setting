@@ -26,6 +26,10 @@ runs:
           ${{ runner.os }}-dart-tool-
     - name: install mise tools
       uses: jdx/mise-action@v5
+      with:
+        # Flutter restored from the mise cache re-bootstraps a mismatched Dart SDK
+        # and breaks `flutter pub get`, so always install it fresh.
+        cache: false
     - name: install melos command
       run: |
         dart pub global activate melos 6.3.3
