@@ -48,12 +48,9 @@ void main() {
 
     test('proxySetting', () async {
       await launcher.proxySetting();
-      expect(
-        log,
-        <Matcher>[
-          isMethodCall('proxySetting', arguments: {"url": null})
-        ],
-      );
+      expect(log, <Matcher>[
+        isMethodCall('proxySetting', arguments: {"url": null}),
+      ]);
     });
   });
 }

@@ -19,16 +19,20 @@ scripts:
     run: melos run analyze && melos run format
     description: Run all static analysis checks.
   analyze: melos exec -- "dart analyze ."
-  format: 
-    run: dart pub global run flutter_plugin_tools format
-    description: Requires `flutter_plugin_tools` (`pub global activate flutter_plugin_tools`).
+  format:
+    run: dart format --output=none --set-exit-if-changed packages tests
   test:
-    run: |
-      melos exec -c 6 --fail-fast -- \
-        "flutter test --no-pub"
-    description: Run `flutter test` for a specific package.
-    select-package:
-      dir-exists:
+    exec: flutter test
+    packageFilters:
+      dirExists:
         - test
       ignore:
         - "*example*"
+  test-ci:
+    exec: flutter test --machine > test.json
+    packageFilters:
+      dirExists:
+        - test
+      ignore:
+        - "*example*"
+  combine: melos exec "\$MELOS_ROOT_PATH/scripts/combine_test.sh"

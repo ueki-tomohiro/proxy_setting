@@ -1,0 +1,33 @@
+name: setup flutter
+description: setup flutter with mise
+runs:
+  using: "composite"
+  steps:
+    - name: setup java
+      uses: actions/setup-java@v4
+      with:
+        java-version: "17"
+        distribution: "temurin"
+    - name: restore pub cache
+      uses: actions/cache@v4
+      with:
+        path: ~/.pub-cache
+        key: ${{ runner.os }}-pub-cache-${{ hashFiles('**/pubspec.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-pub-cache-
+    - name: restore pubspec cache
+      uses: actions/cache@v4
+      with:
+        path: |
+          packages/*/.dart_tool
+          tests/.dart_tool
+        key: ${{ runner.os }}-dart-tool-${{ hashFiles('**/pubspec.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-dart-tool-
+    - name: install mise tools
+      uses: jdx/mise-action@v5
+    - name: install melos command
+      run: |
+        dart pub global activate melos 6.3.3
+        echo "$HOME/.pub-cache/bin" >> "$GITHUB_PATH"
+      shell: bash
