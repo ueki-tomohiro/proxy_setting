@@ -38,3 +38,9 @@ packages/proxy_setting_android/android/gradle.properties
 .DS_Store
 /build
 /captures
+
+# Test reports
+report/
+
+# Melos
+pubspec_overrides.yaml

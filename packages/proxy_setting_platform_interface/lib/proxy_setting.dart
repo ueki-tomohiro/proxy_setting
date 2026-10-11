@@ -7,12 +7,13 @@ class ProxySetting {
   String proxyBypass;
   String configUrl;
 
-  ProxySetting(
-      {this.mode = ProxySettingModeEnum.direct,
-      this.isAutoDetect = false,
-      this.proxy = "",
-      this.proxyBypass = "",
-      this.configUrl = ""});
+  ProxySetting({
+    this.mode = ProxySettingModeEnum.direct,
+    this.isAutoDetect = false,
+    this.proxy = "",
+    this.proxyBypass = "",
+    this.configUrl = "",
+  });
 
   @override
   String toString() {

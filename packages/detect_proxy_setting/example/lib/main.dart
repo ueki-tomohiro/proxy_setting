@@ -63,9 +63,7 @@ class _ProxySettingHomePageState extends State<ProxySettingHomePage> {
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('System Proxy Setting'),
-      ),
+      appBar: AppBar(title: const Text('System Proxy Setting')),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: _error != null
@@ -114,10 +112,7 @@ class _ProxySettingHomePageState extends State<ProxySettingHomePage> {
 }
 
 class _SettingRow extends StatelessWidget {
-  const _SettingRow({
-    required this.label,
-    required this.value,
-  });
+  const _SettingRow({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -129,13 +124,8 @@ class _SettingRow extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            width: 96,
-            child: Text(label),
-          ),
-          Expanded(
-            child: Text(value),
-          ),
+          SizedBox(width: 96, child: Text(label)),
+          Expanded(child: Text(value)),
         ],
       ),
     );
