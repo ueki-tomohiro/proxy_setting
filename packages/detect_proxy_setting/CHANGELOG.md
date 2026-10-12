@@ -1,3 +1,7 @@
+## 0.0.11
+* require Flutter 3.47 or later
+* update platform package versions (Android AGP 9 build, iOS / macOS Swift Package Manager support)
+
 ## 0.0.10
 * update Android package version for Android Gradle Plugin namespace compatibility
 

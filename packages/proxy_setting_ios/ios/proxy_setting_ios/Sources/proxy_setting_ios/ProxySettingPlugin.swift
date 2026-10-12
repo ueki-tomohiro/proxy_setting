@@ -35,12 +35,12 @@ private struct ResolvedProxy {
   let proxy: String
 }
 
-public class SwiftProxySettingPlugin: NSObject, FlutterPlugin {
+public class ProxySettingPlugin: NSObject, FlutterPlugin {
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(
       name: "playon.jp/proxy_setting_ios",
       binaryMessenger: registrar.messenger())
-    let instance = SwiftProxySettingPlugin()
+    let instance = ProxySettingPlugin()
     registrar.addMethodCallDelegate(instance, channel: channel)
   }
 

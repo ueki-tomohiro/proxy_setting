@@ -1,11 +1,11 @@
 name: proxy_setting_macos
 description: MacOS implementation of the detect_proxy_setting plugin.
 repository: https://github.com/ueki-tomohiro/proxy_setting/tree/main/packages/proxy_setting_macos
-version: 0.0.6
+version: 0.0.7
 
 environment:
-  sdk: ^3.11.1
-  flutter: ">=3.3.0"
+  sdk: ^3.13.0
+  flutter: ">=3.47.0"
 
 flutter:
   plugin:
@@ -19,7 +19,7 @@ flutter:
 dependencies:
   flutter:
     sdk: flutter
-  proxy_setting_platform_interface: ^0.0.3
+  proxy_setting_platform_interface: ^0.0.4
 
 dev_dependencies:
   flutter_test:

@@ -1,11 +1,11 @@
 name: proxy_setting_platform_interface
 description: This package is base of the detect_proxy_setting plugin.
 repository: https://github.com/ueki-tomohiro/proxy_setting/tree/main/packages/proxy_setting_platform_interface
-version: 0.0.3
+version: 0.0.4
 
 environment:
-  sdk: ^3.11.1
-  flutter: ">=3.3.0"
+  sdk: ^3.13.0
+  flutter: ">=3.47.0"
 
 dependencies:
   flutter:

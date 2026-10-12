@@ -3,7 +3,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'proxy_setting_ios'
-  s.version          = '0.0.5'
+  s.version          = '0.0.6'
   s.summary          = 'iOS implementation of the detect_proxy_setting plugin.'
   s.description      = <<-DESC
   An iOS implementation of the detect_proxy_setting plugin.
@@ -12,9 +12,9 @@ Pod::Spec.new do |s|
   s.license          = { :type => 'MIT', :file => '../LICENSE' }
   s.author           = { 'Tomohiro Ueki' => 'tomohiro.ueki.com' }
   s.source           = { :http => 'https://github.com/ueki-tomohiro/proxy_setting/packages/proxy_setting_ios' }
-  s.source_files     = 'Classes/**/*'
+  s.source_files     = 'proxy_setting_ios/Sources/proxy_setting_ios/**/*'
   s.dependency 'Flutter'
-  s.platform = :ios, '9.0'
+  s.platform = :ios, '15.0'
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }
   s.swift_version = '5.0'
 end

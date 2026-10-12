@@ -1,3 +1,8 @@
+## 0.0.6
+* require Flutter 3.47 or later and iOS 15.0
+* add Swift Package Manager support
+* remove Objective-C registration shim
+
 ## 0.0.5
 * fix Xcode 16 / Swift 6 callback compatibility
 

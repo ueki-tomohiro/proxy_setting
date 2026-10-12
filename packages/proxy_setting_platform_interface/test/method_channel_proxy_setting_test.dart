@@ -32,18 +32,24 @@ void main() {
   group('$ProxySettingPlatform', () {
     const MethodChannel channel = MethodChannel('playon.jp/proxy_setting');
     final List<MethodCall> log = <MethodCall>[];
-    channel.setMockMethodCallHandler((MethodCall methodCall) async {
-      log.add(methodCall);
-
-      // Return null explicitly instead of relying on the implicit null
-      // returned by the method channel if no return statement is specified.
-      return null;
-    });
 
     final MethodChannelProxySetting launcher = MethodChannelProxySetting();
 
+    setUp(() {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
+            log.add(methodCall);
+
+            // Return null explicitly instead of relying on the implicit null
+            // returned by the method channel if no return statement is specified.
+            return null;
+          });
+    });
+
     tearDown(() {
       log.clear();
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, null);
     });
 
     test('proxySetting', () async {
