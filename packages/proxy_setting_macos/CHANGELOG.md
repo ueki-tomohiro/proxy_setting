@@ -1,3 +1,7 @@
+## 0.0.7
+* require Flutter 3.47 or later and macOS 12.0
+* add Swift Package Manager support
+
 ## 0.0.6
 * fix Xcode 16 / Swift 6 callback compatibility
 

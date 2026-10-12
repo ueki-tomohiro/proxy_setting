@@ -11,11 +11,14 @@ Supported platforms:
 - macOS
 - Windows
 
+Requires Flutter 3.47 or later. Minimum OS versions: Android API 24, iOS 15.0, macOS 12.0.
+iOS and macOS support both Swift Package Manager and CocoaPods.
+
 ## Installation
 
 ```yaml
 dependencies:
-  detect_proxy_setting: ^0.0.10
+  detect_proxy_setting: ^0.0.11
 ```
 
 ## Usage

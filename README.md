@@ -25,13 +25,16 @@ The package you normally add to an app is `detect_proxy_setting`. This repositor
 
 Linux and Web are not implemented in this repository.
 
+Requires Flutter 3.47 or later. Minimum OS versions: Android API 24, iOS 15.0, macOS 12.0.
+iOS and macOS support both Swift Package Manager and CocoaPods.
+
 ## Installation
 
 Add `detect_proxy_setting` to your `pubspec.yaml`.
 
 ```yaml
 dependencies:
-  detect_proxy_setting: ^0.0.10
+  detect_proxy_setting: ^0.0.11
 ```
 
 ## Usage

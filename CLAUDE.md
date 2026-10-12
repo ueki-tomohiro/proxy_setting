@@ -11,7 +11,7 @@ OS のシステム HTTP プロキシ設定を取得する federated Flutter plug
 
 ## ツールチェーンとコマンド
 
-- Flutter のバージョンは `.tool-versions`（mise）で管理: `flutter 3.41.4-stable`
+- Flutter のバージョンは `.tool-versions`（mise）で管理: `flutter 3.47.6`
 - Melos は 6.3.3（`dart pub global activate melos 6.3.3`）
 
 ```sh
@@ -22,7 +22,7 @@ cd packages/<pkg> && flutter test   # 単一パッケージのテスト
 ```
 
 - フォーマットは CI でチェックされるため、Dart を変更したら `dart format packages tests` を実行する
-- Android の native unit test（JUnit）: `packages/proxy_setting_android/android/src/test/kotlin/...`。Gradle wrapper は `packages/proxy_setting_android/android/gradlew`（CI では実行されない）
+- Android の native unit test（JUnit）: `packages/proxy_setting_android/android/src/test/kotlin/...`。AGP 9 はルートプロジェクトへの適用を禁止しているためプラグイン単体ではビルドできない。`tests` で一度 `flutter build apk --debug` してから `cd tests/android && ./gradlew :proxy_setting_android:testDebugUnitTest` で実行する（Java 17 が必要。CI では実行されない）
 
 ## アーキテクチャ
 
@@ -35,8 +35,8 @@ cd packages/<pkg> && flutter test   # 単一パッケージのテスト
 | Platform | native 実装 |
 |---|---|
 | Android | `packages/proxy_setting_android/android/src/main/kotlin/jp/playon/proxy_setting_android/`（`ProxySettingPlugin.kt`, `ProxySettingResolver.kt`） |
-| iOS | `packages/proxy_setting_ios/ios/Classes/SwiftProxySettingPlugin.swift`（ObjC shim `ProxySettingPlugin.h/.m`） |
-| macOS | `packages/proxy_setting_macos/macos/Classes/ProxySettingPlugin.swift` |
+| iOS | `packages/proxy_setting_ios/ios/proxy_setting_ios/Sources/proxy_setting_ios/ProxySettingPlugin.swift`（SPM: `Package.swift`、CocoaPods: `proxy_setting_ios.podspec`） |
+| macOS | `packages/proxy_setting_macos/macos/proxy_setting_macos/Sources/proxy_setting_macos/ProxySettingPlugin.swift`（SPM / CocoaPods 両対応） |
 | Windows | `packages/proxy_setting_windows/windows/proxy_setting_plugin.cpp` ほか（WinHTTP で PAC / 自動検出） |
 
 各プラットフォームの Dart 側テストは `setMockMethodCallHandler` でチャネルをモックしている。

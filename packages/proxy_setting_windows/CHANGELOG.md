@@ -1,3 +1,6 @@
+## 0.0.6
+* require Flutter 3.47 or later
+
 ## 0.0.5
 * fix proxy resolution for URL requests
 * restore WinHTTP default proxy fallback
